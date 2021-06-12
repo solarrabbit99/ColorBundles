@@ -1,15 +1,19 @@
 package com.paratopiamc.colorbundles;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import net.md_5.bungee.api.ChatColor;
 
 public final class ColorBundles extends JavaPlugin {
+    private List<String> recipeKeys;
+
     private static enum Dyes {
         BLACK("black"), BLUE("blue"), BROWN("brown"), CYAN("cyan"), GRAY("gray"), GREEN("green"),
         LIGHT_BLUE("light_blue"), LIGHT_GRAY("light_gray"), LIME("lime"), MAGENTA("magenta"), ORANGE("orange"),
@@ -43,7 +47,9 @@ public final class ColorBundles extends JavaPlugin {
             }
         }
         saveDefaultConfig();
+        getServer().getPluginManager().registerEvents(new CraftingListener(this), this);
 
+        recipeKeys = new ArrayList<>();
         for (Dyes dye : Dyes.values()) {
             ItemStack item = new ItemStack(Material.BUNDLE);
             ItemMeta meta = item.getItemMeta();
@@ -53,16 +59,20 @@ public final class ColorBundles extends JavaPlugin {
 
             item.setItemMeta(meta);
             NamespacedKey key = new NamespacedKey(this, dye + "_bundle");
-            ShapedRecipe recipe = new ShapedRecipe(key, item);
+            ShapelessRecipe recipe = new ShapelessRecipe(key, item);
 
-            recipe.shape("BD");
-            recipe.setIngredient('B', Material.BUNDLE);
-            recipe.setIngredient('D', dye.getDye());
+            recipe.addIngredient(Material.BUNDLE);
+            recipe.addIngredient(dye.getDye());
 
             Bukkit.addRecipe(recipe);
+            recipeKeys.add(dye + "_bundle");
 
             getServer().getConsoleSender()
                     .sendMessage(ChatColor.GREEN + "[ColorBundles] Loaded recipes: " + dye + "_bundle");
         }
+    }
+
+    public List<String> getRecipeKeys() {
+        return this.recipeKeys;
     }
 }
