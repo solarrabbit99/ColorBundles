@@ -21,6 +21,7 @@ package com.paratopiamc.colorbundles;
 import java.util.HashMap;
 import java.util.List;
 import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
@@ -46,6 +47,10 @@ public class CraftingListener implements Listener {
             List<String> recipeKeys = this.plugin.getRecipeKeys();
             for (int i = 0; i < recipeKeys.size(); i++) {
                 if (currentKey.equals(recipeKeys.get(i))) {
+                    List<HumanEntity> viewers = evt.getViewers();
+                    boolean anyPermitted = viewers.stream()
+                            .anyMatch(human -> human.hasPermission("colorbundles.craft"));
+
                     ItemStack originalResult = shapeless.getResult();
                     int customModelData = originalResult.getItemMeta().getCustomModelData();
 
@@ -58,7 +63,7 @@ public class CraftingListener implements Listener {
                     meta.setCustomModelData(customModelData);
                     finalResult.setItemMeta(meta);
 
-                    inventory.setResult(finalResult);
+                    inventory.setResult(anyPermitted ? finalResult : null);
                     break;
                 }
             }
