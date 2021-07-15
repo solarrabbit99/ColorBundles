@@ -91,17 +91,8 @@ public final class ColorBundles extends JavaPlugin implements Listener {
                         ChatColor.WHITE + WordUtils.capitalize(dye.toString().replaceAll("_", " ")) + " Bundle");
                 item.setItemMeta(meta);
 
-                NamespacedKey key = new NamespacedKey(this, dye + "_bundle");
-                ShapelessRecipe recipe = new ShapelessRecipe(key, item);
-                recipe.addIngredient(Material.BUNDLE);
-                recipe.addIngredient(dye.getDye());
-
-                Bukkit.addRecipe(recipe);
-
+                loadRecipe(dye, item);
                 recipeKeys.add(dye + "_bundle");
-
-                getServer().getConsoleSender()
-                        .sendMessage(ChatColor.GREEN + "[ColorBundles] Loaded recipes: " + dye + "_bundle");
             }
         }
     }
@@ -111,18 +102,20 @@ public final class ColorBundles extends JavaPlugin implements Listener {
         for (Dyes dye : Dyes.values()) {
             ItemStack item = CustomStack.getInstance("colorbundles:" + dye + "_bundle").getItemStack();
 
-            NamespacedKey key = new NamespacedKey(this, dye + "_bundle");
-            ShapelessRecipe recipe = new ShapelessRecipe(key, item);
-            recipe.addIngredient(Material.BUNDLE);
-            recipe.addIngredient(dye.getDye());
-
-            Bukkit.addRecipe(recipe);
-
+            loadRecipe(dye, item);
             recipeKeys.add(dye + "_bundle");
-
-            getServer().getConsoleSender()
-                    .sendMessage(ChatColor.GREEN + "[ColorBundles] Loaded recipes: " + dye + "_bundle");
         }
+    }
+
+    private void loadRecipe(Dyes dye, ItemStack result) {
+        NamespacedKey key = new NamespacedKey(this, dye + "_bundle");
+        ShapelessRecipe recipe = new ShapelessRecipe(key, result);
+        recipe.addIngredient(Material.BUNDLE);
+        recipe.addIngredient(dye.getDye());
+
+        Bukkit.addRecipe(recipe);
+        getServer().getConsoleSender()
+                .sendMessage(ChatColor.GREEN + "[ColorBundles] Loaded recipes: " + dye + "_bundle");
     }
 
     public List<String> getRecipeKeys() {
