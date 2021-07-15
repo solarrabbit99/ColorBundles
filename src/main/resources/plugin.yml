@@ -4,6 +4,8 @@ version: 1.2
 author: SolarRabbit
 api-version: 1.17
 
+softdepend: [ItemsAdder]
+
 permissions:
   colorbundles.craft:
     description: User able to craft color bundles.

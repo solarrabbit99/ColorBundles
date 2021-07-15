@@ -20,6 +20,9 @@ package com.paratopiamc.colorbundles;
 
 import java.util.HashMap;
 import java.util.List;
+import org.apache.commons.lang.WordUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;
@@ -29,7 +32,9 @@ import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapelessRecipe;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.BundleMeta;
+import dev.lone.itemsadder.api.CustomStack;
+import dev.lone.itemsadder.api.ItemsAdder;
 
 public class CraftingListener implements Listener {
     private ColorBundles plugin;
@@ -42,8 +47,7 @@ public class CraftingListener implements Listener {
     public void onCraft(PrepareItemCraftEvent evt) {
         Recipe recipe = evt.getRecipe();
         if (recipe instanceof ShapelessRecipe) {
-            ShapelessRecipe shapeless = (ShapelessRecipe) recipe;
-            String currentKey = shapeless.getKey().getKey();
+            String currentKey = ((ShapelessRecipe) recipe).getKey().getKey();
             List<String> recipeKeys = this.plugin.getRecipeKeys();
             for (int i = 0; i < recipeKeys.size(); i++) {
                 if (currentKey.equals(recipeKeys.get(i))) {
@@ -51,22 +55,56 @@ public class CraftingListener implements Listener {
                     boolean anyPermitted = viewers.stream()
                             .anyMatch(human -> human.hasPermission("colorbundles.craft"));
 
-                    ItemStack originalResult = shapeless.getResult();
-                    int customModelData = originalResult.getItemMeta().getCustomModelData();
+                    // #getResult returns a clone
+                    ItemStack originalResult = recipe.getResult();
+                    BundleMeta resultMeta = (BundleMeta) originalResult.getItemMeta();
 
                     CraftingInventory inventory = evt.getInventory();
                     HashMap<Integer, ? extends ItemStack> mapping = inventory.all(Material.BUNDLE);
                     Integer[] array = mapping.keySet().toArray(new Integer[2]);
-                    ItemStack finalResult = inventory.getItem(array[1]).clone();
+                    // original bundle
+                    ItemStack ingredientBundle = inventory.getItem(array[1]).clone();
+                    BundleMeta meta = (BundleMeta) ingredientBundle.getItemMeta();
 
-                    ItemMeta meta = finalResult.getItemMeta();
-                    meta.setCustomModelData(customModelData);
-                    finalResult.setItemMeta(meta);
+                    resultMeta.setItems(meta.getItems());
+                    if (meta.hasDisplayName()
+                            && !meta.getDisplayName().equals(this.getOriginalName(ingredientBundle))) {
+                        resultMeta.setDisplayName(meta.getDisplayName());
+                    }
+                    if (meta.hasLore()) {
+                        resultMeta.setLore(meta.getLore());
+                    }
 
-                    inventory.setResult(anyPermitted ? finalResult : null);
+                    originalResult.setItemMeta(resultMeta);
+
+                    meta.getEnchants().forEach(originalResult::addUnsafeEnchantment);
+
+                    Bukkit.getScheduler().runTask(this.plugin,
+                            () -> inventory.setResult(anyPermitted ? originalResult : null));
                     break;
                 }
             }
+        }
+    }
+
+    /**
+     * Returns the original name of the bundle item.
+     * 
+     * @param item ingredient bundle item
+     * @return {@code null} if {@link ItemMeta#hasDisplayName()} returns
+     *         {@code false}.
+     */
+    private String getOriginalName(ItemStack item) {
+        if (this.plugin.hasItemsAdder() && ItemsAdder.isCustomItem(item)) {
+            return CustomStack.getInstance(CustomStack.byItemStack(item).getNamespacedID()).getDisplayName();
+        } else if (!item.getItemMeta().hasCustomModelData()) {
+            return null;
+        } else {
+            return this.plugin.getConfig().getKeys(false).stream()
+                    .filter(str -> this.plugin.getConfig().getInt(str) == item.getItemMeta().getCustomModelData())
+                    .findFirst()
+                    .map(str -> ChatColor.WHITE + WordUtils.capitalize(str.replaceAll("_", " ")) + " Bundle")
+                    .orElse(null);
         }
     }
 }
