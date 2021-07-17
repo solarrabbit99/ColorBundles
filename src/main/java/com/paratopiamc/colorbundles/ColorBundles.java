@@ -101,7 +101,6 @@ public final class ColorBundles extends JavaPlugin implements Listener {
     public void onItemsLoadEvent(ItemsAdderFirstLoadEvent evt) {
         for (Dyes dye : Dyes.values()) {
             ItemStack item = CustomStack.getInstance("colorbundles:" + dye + "_bundle").getItemStack();
-
             loadRecipe(dye, item);
             recipeKeys.add(dye + "_bundle");
         }
@@ -109,13 +108,15 @@ public final class ColorBundles extends JavaPlugin implements Listener {
 
     private void loadRecipe(Dyes dye, ItemStack result) {
         NamespacedKey key = new NamespacedKey(this, dye + "_bundle");
-        ShapelessRecipe recipe = new ShapelessRecipe(key, result);
-        recipe.addIngredient(Material.BUNDLE);
-        recipe.addIngredient(dye.getDye());
+        if (Bukkit.getRecipe(key) == null) { // not yet loaded
+            ShapelessRecipe recipe = new ShapelessRecipe(key, result);
+            recipe.addIngredient(Material.BUNDLE);
+            recipe.addIngredient(dye.getDye());
 
-        Bukkit.addRecipe(recipe);
-        getServer().getConsoleSender()
-                .sendMessage(ChatColor.GREEN + "[ColorBundles] Loaded recipes: " + dye + "_bundle");
+            Bukkit.addRecipe(recipe);
+            getServer().getConsoleSender()
+                    .sendMessage(ChatColor.GREEN + "[ColorBundles] Loaded recipes: " + dye + "_bundle");
+        }
     }
 
     public List<String> getRecipeKeys() {
