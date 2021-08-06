@@ -68,6 +68,9 @@ public final class ColorBundles extends JavaPlugin implements Listener {
         if (this.hasItemsAdder) {
             getServer().getConsoleSender().sendMessage(
                     ChatColor.AQUA + "[ColorBundles] ItemsAdder detected! Waiting for ItemsAdder to load items...");
+        } else {
+            getServer().getConsoleSender().sendMessage(ChatColor.GOLD
+                    + "[ColorBundles] Ignore the error message regarding plugin failing to register ItemsAdder's events if you do not have ItemsAdder installed...");
         }
 
         if (!this.getDataFolder().exists()) {
