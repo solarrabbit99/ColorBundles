@@ -2,19 +2,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>solarrabbit</groupId>
 	<artifactId>ColorBundles</artifactId>
-	<version>1.4</version>
+	<version>1.5</version>
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<junit.version>5.6.0</junit.version>
-		<maven-enforcer-plugin.version>3.0.0-M3</maven-enforcer-plugin.version>
-		<maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
-		<checkstyle.version>8.29</checkstyle.version>
-		<checkstyle-rules.version>4.0.1</checkstyle-rules.version>
-		<maven-surefire-plugin.version>3.0.0-M4</maven-surefire-plugin.version>
-		<maven-javadoc-plugin.version>3.0.0</maven-javadoc-plugin.version>
-		<coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
 	</properties>
 	<repositories>
 		<repository>
@@ -54,40 +47,12 @@
 	</dependencies>
 	<build>
 		<finalName>${project.name}</finalName>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>${maven-enforcer-plugin.version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-						<configuration>
-							<rules>
-								<requireMavenVersion>
-									<version>3.6.3</version>
-								</requireMavenVersion>
-							</rules>
-							<fail>true</fail>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>${maven-surefire-plugin.version}</version>
-			</plugin>
-		</plugins>
 		<resources>
 			<resource>
-				<directory>${project.basedir}/src/main/resources</directory>
+				<directory>${project.basedir}/resources</directory>
 				<filtering>true</filtering>
 				<includes>
-					<include>plugin.yml</include>
-					<include>config.yml</include>
+					<include>**/*.yml</include>
 				</includes>
 			</resource>
 		</resources>
@@ -102,24 +67,6 @@
 		</plugins>
 	</reporting>
 	<profiles>
-		<!-- Publish coverage report to Coveralls, only when running in Travis. -->
-		<profile>
-			<id>travis</id>
-			<activation>
-				<property>
-					<name>env.TRAVIS</name>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.eluder.coveralls</groupId>
-						<artifactId>coveralls-maven-plugin</artifactId>
-						<version>${coveralls-maven-plugin.version}</version>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
 		<profile>
 			<id>conf</id>
 			<build>
@@ -129,7 +76,7 @@
 						<artifactId>maven-jar-plugin</artifactId>
 						<version>2.4</version>
 						<configuration>
-							<outputDirectory>${project.basedir}/../test_servers</outputDirectory>
+							<outputDirectory>${project.basedir}/../../test_servers</outputDirectory>
 						</configuration>
 					</plugin>
 				</plugins>

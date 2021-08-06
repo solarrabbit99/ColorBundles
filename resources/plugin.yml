@@ -1,6 +1,6 @@
-main: com.paratopiamc.colorbundles.ColorBundles
+main: com.solarrabbit.colorbundles.ColorBundles
 name: ColorBundles
-version: 1.4
+version: ${project.version}
 author: SolarRabbit
 api-version: 1.17
 

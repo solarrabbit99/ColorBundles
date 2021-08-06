@@ -16,7 +16,7 @@
  *
  */
 
-package com.paratopiamc.colorbundles;
+package com.solarrabbit.colorbundles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +28,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -80,6 +81,8 @@ public final class ColorBundles extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new CraftingListener(this), this);
         getServer().getPluginManager().registerEvents(this, this);
 
+        loadDefaultBundleRecipe();
+
         recipeKeys = new ArrayList<>();
         if (!this.hasItemsAdder) {
             for (Dyes dye : Dyes.values()) {
@@ -103,6 +106,18 @@ public final class ColorBundles extends JavaPlugin implements Listener {
             ItemStack item = CustomStack.getInstance("colorbundles:" + dye + "_bundle").getItemStack();
             loadRecipe(dye, item);
             recipeKeys.add(dye + "_bundle");
+        }
+    }
+
+    private void loadDefaultBundleRecipe() {
+        NamespacedKey key = new NamespacedKey(this, "bundle");
+        if (Bukkit.getRecipe(key) == null && Bukkit.getVersion().contains("1.17")) { // not yet loaded
+            ShapedRecipe recipe = new ShapedRecipe(key, new ItemStack(Material.BUNDLE));
+            recipe.shape("SRS", "R R", "RRR");
+            recipe.setIngredient('S', Material.STRING);
+            recipe.setIngredient('R', Material.RABBIT_HIDE);
+
+            Bukkit.addRecipe(recipe);
         }
     }
 

@@ -16,7 +16,7 @@
  *
  */
 
-package com.paratopiamc.colorbundles;
+package com.solarrabbit.colorbundles;
 
 import java.util.HashMap;
 import java.util.List;
