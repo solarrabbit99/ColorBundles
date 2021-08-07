@@ -1,5 +1,5 @@
 /*
- *  This file is part of ColorBundles. Copyright (c) 2021 Paratopia.
+ *  This file is part of ColorBundles. Copyright (c) 2021 SolarRabbit.
  *
  *  ColorBundles is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -34,7 +34,6 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.BundleMeta;
 import dev.lone.itemsadder.api.CustomStack;
-import dev.lone.itemsadder.api.ItemsAdder;
 
 public class CraftingListener implements Listener {
     private ColorBundles plugin;
@@ -95,7 +94,7 @@ public class CraftingListener implements Listener {
      *         {@code false}.
      */
     private String getOriginalName(ItemStack item) {
-        if (this.plugin.hasItemsAdder() && ItemsAdder.isCustomItem(item)) {
+        if (this.plugin.hasItemsAdder() && CustomStack.byItemStack(item) != null) {
             return CustomStack.getInstance(CustomStack.byItemStack(item).getNamespacedID()).getDisplayName();
         } else if (!item.getItemMeta().hasCustomModelData()) {
             return null;

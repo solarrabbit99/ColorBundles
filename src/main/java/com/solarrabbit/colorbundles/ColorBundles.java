@@ -1,5 +1,5 @@
 /*
- *  This file is part of ColorBundles. Copyright (c) 2021 Paratopia.
+ *  This file is part of ColorBundles. Copyright (c) 2021 SolarRabbit.
  *
  *  ColorBundles is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import dev.lone.itemsadder.api.CustomStack;
-import dev.lone.itemsadder.api.Events.ItemsAdderFirstLoadEvent;
+import dev.lone.itemsadder.api.Events.ItemsAdderLoadDataEvent;
 
 public final class ColorBundles extends JavaPlugin implements Listener {
     private List<String> recipeKeys;
@@ -104,7 +104,7 @@ public final class ColorBundles extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    public void onItemsLoadEvent(ItemsAdderFirstLoadEvent evt) {
+    public void onItemsLoadEvent(ItemsAdderLoadDataEvent evt) {
         for (Dyes dye : Dyes.values()) {
             ItemStack item = CustomStack.getInstance("colorbundles:" + dye + "_bundle").getItemStack();
             loadRecipe(dye, item);
