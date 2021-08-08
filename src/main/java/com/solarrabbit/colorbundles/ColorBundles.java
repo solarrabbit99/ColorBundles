@@ -64,25 +64,15 @@ public final class ColorBundles extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
+        saveDefaultConfig();
+
         this.hasItemsAdder = this.getServer().getPluginManager().getPlugin("ItemsAdder") != null;
         if (this.hasItemsAdder) {
             getServer().getConsoleSender().sendMessage(
                     ChatColor.AQUA + "[ColorBundles] ItemsAdder detected! Waiting for ItemsAdder to load items...");
-        } else {
-            getServer().getConsoleSender().sendMessage(ChatColor.GOLD
-                    + "[ColorBundles] Ignore the error message regarding plugin failing to register ItemsAdder's events if you do not have ItemsAdder installed...");
+            getServer().getPluginManager().registerEvents(this, this);
         }
-
-        if (!this.getDataFolder().exists()) {
-            try {
-                this.getDataFolder().mkdir();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        saveDefaultConfig();
         getServer().getPluginManager().registerEvents(new CraftingListener(this), this);
-        getServer().getPluginManager().registerEvents(this, this);
 
         loadDefaultBundleRecipe();
 
