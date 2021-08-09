@@ -24,7 +24,6 @@ import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
@@ -50,7 +49,7 @@ public class CraftingListener implements Listener {
             List<String> recipeKeys = this.plugin.getRecipeKeys();
             for (int i = 0; i < recipeKeys.size(); i++) {
                 if (currentKey.equals(recipeKeys.get(i))) {
-                    Bukkit.getScheduler().runTask(this.plugin, () -> prepareResult(evt));
+                    prepareResult(evt);
                     break;
                 }
             }
@@ -60,22 +59,17 @@ public class CraftingListener implements Listener {
     private void prepareResult(PrepareItemCraftEvent evt) {
         Recipe recipe = evt.getRecipe();
         CraftingInventory inventory = evt.getInventory();
-        List<HumanEntity> viewers = evt.getViewers();
-
-        boolean anyPermitted = viewers.stream().anyMatch(human -> human.hasPermission("colorbundles.craft"));
-        if (!anyPermitted) {
-            inventory.setResult(null);
-            return;
-        }
-
-        // #getResult returns a clone
-        ItemStack originalResult = recipe.getResult();
-        BundleMeta resultMeta = (BundleMeta) originalResult.getItemMeta();
 
         HashMap<Integer, ? extends ItemStack> mapping = inventory.all(Material.BUNDLE);
         Integer[] array = mapping.keySet().toArray(new Integer[2]);
         // original bundle
+        if (array[1] == null) {
+            return;
+        }
         ItemStack ingredientBundle = inventory.getItem(array[1]).clone();
+        // #getResult returns a clone
+        ItemStack originalResult = recipe.getResult();
+        BundleMeta resultMeta = (BundleMeta) originalResult.getItemMeta();
 
         BundleMeta meta = (BundleMeta) ingredientBundle.getItemMeta();
         resultMeta.setItems(meta.getItems());
@@ -86,10 +80,13 @@ public class CraftingListener implements Listener {
             resultMeta.setLore(meta.getLore());
         }
         originalResult.setItemMeta(resultMeta);
-
         meta.getEnchants().forEach(originalResult::addUnsafeEnchantment);
 
-        inventory.setResult(originalResult);
+        Bukkit.getScheduler().runTask(this.plugin, () -> {
+            boolean anyPermitted = evt.getViewers().stream()
+                    .anyMatch(human -> human.hasPermission("colorbundles.craft"));
+            inventory.setResult(anyPermitted ? originalResult : null);
+        });
     }
 
     /**
