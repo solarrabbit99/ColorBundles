@@ -50,40 +50,46 @@ public class CraftingListener implements Listener {
             List<String> recipeKeys = this.plugin.getRecipeKeys();
             for (int i = 0; i < recipeKeys.size(); i++) {
                 if (currentKey.equals(recipeKeys.get(i))) {
-                    List<HumanEntity> viewers = evt.getViewers();
-                    boolean anyPermitted = viewers.stream()
-                            .anyMatch(human -> human.hasPermission("colorbundles.craft"));
-
-                    // #getResult returns a clone
-                    ItemStack originalResult = recipe.getResult();
-                    BundleMeta resultMeta = (BundleMeta) originalResult.getItemMeta();
-
-                    CraftingInventory inventory = evt.getInventory();
-                    HashMap<Integer, ? extends ItemStack> mapping = inventory.all(Material.BUNDLE);
-                    Integer[] array = mapping.keySet().toArray(new Integer[2]);
-                    // original bundle
-                    ItemStack ingredientBundle = inventory.getItem(array[1]).clone();
-                    BundleMeta meta = (BundleMeta) ingredientBundle.getItemMeta();
-
-                    resultMeta.setItems(meta.getItems());
-                    if (meta.hasDisplayName()
-                            && !meta.getDisplayName().equals(this.getOriginalName(ingredientBundle))) {
-                        resultMeta.setDisplayName(meta.getDisplayName());
-                    }
-                    if (meta.hasLore()) {
-                        resultMeta.setLore(meta.getLore());
-                    }
-
-                    originalResult.setItemMeta(resultMeta);
-
-                    meta.getEnchants().forEach(originalResult::addUnsafeEnchantment);
-
-                    Bukkit.getScheduler().runTask(this.plugin,
-                            () -> inventory.setResult(anyPermitted ? originalResult : null));
+                    Bukkit.getScheduler().runTask(this.plugin, () -> prepareResult(evt));
                     break;
                 }
             }
         }
+    }
+
+    private void prepareResult(PrepareItemCraftEvent evt) {
+        Recipe recipe = evt.getRecipe();
+        CraftingInventory inventory = evt.getInventory();
+        List<HumanEntity> viewers = evt.getViewers();
+
+        boolean anyPermitted = viewers.stream().anyMatch(human -> human.hasPermission("colorbundles.craft"));
+        if (!anyPermitted) {
+            inventory.setResult(null);
+            return;
+        }
+
+        // #getResult returns a clone
+        ItemStack originalResult = recipe.getResult();
+        BundleMeta resultMeta = (BundleMeta) originalResult.getItemMeta();
+
+        HashMap<Integer, ? extends ItemStack> mapping = inventory.all(Material.BUNDLE);
+        Integer[] array = mapping.keySet().toArray(new Integer[2]);
+        // original bundle
+        ItemStack ingredientBundle = inventory.getItem(array[1]).clone();
+
+        BundleMeta meta = (BundleMeta) ingredientBundle.getItemMeta();
+        resultMeta.setItems(meta.getItems());
+        if (meta.hasDisplayName() && !meta.getDisplayName().equals(this.getOriginalName(ingredientBundle))) {
+            resultMeta.setDisplayName(meta.getDisplayName());
+        }
+        if (meta.hasLore()) {
+            resultMeta.setLore(meta.getLore());
+        }
+        originalResult.setItemMeta(resultMeta);
+
+        meta.getEnchants().forEach(originalResult::addUnsafeEnchantment);
+
+        inventory.setResult(originalResult);
     }
 
     /**
