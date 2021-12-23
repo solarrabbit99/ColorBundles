@@ -17,7 +17,6 @@
 
 package com.solarrabbit.colorbundles.listener;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.solarrabbit.colorbundles.ColorBundles;
@@ -80,14 +79,14 @@ public class CraftingListener implements Listener {
     private boolean hasOriginalName(ItemMeta meta) {
         if (!meta.hasDisplayName())
             return true;
-        return meta.getDisplayName() == getOriginalName(meta);
+        return meta.getDisplayName().equals(getOriginalName(meta));
     }
 
     private String getOriginalName(ItemMeta meta) {
         if (plugin.getUserConfig().hasCustomLoader()) {
             ItemStack item = new ItemStack(Material.BUNDLE);
             item.setItemMeta(meta);
-            return Optional.ofNullable(CustomStack.byItemStack(item)).map(CustomStack::getDisplayName).orElse(null);
+            return CustomStack.getInstance(CustomStack.byItemStack(item).getNamespacedID()).getDisplayName();
         }
         PersistentDataContainer prc = meta.getPersistentDataContainer();
         NamespacedKey nsk = new NamespacedKey(JavaPlugin.getPlugin(ColorBundles.class),
