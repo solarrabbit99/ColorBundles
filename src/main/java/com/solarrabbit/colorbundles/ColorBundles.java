@@ -81,16 +81,34 @@ public final class ColorBundles extends JavaPlugin {
         loader.loadRecipes();
     }
 
+    /**
+     * Adds a {@link NamespacedKey} used to load custom bundles' recipes.
+     *
+     * @param key namespaced key
+     */
     public void addCustomRecipeKey(NamespacedKey key) {
         customRecipeKeys.add(key);
     }
 
+    /**
+     * Returns whether the recipe is a recipe for custom bundles registered and
+     * loaded by the plugin.
+     *
+     * @param recipe crafting recipe
+     * @return {@code true} if recipe is registered and loaded by the plugin
+     */
     public boolean isCustomRecipe(Recipe recipe) {
         if (!(recipe instanceof ShapelessRecipe))
             return false;
         return customRecipeKeys.contains(((ShapelessRecipe) recipe).getKey());
     }
 
+    /**
+     * Returns user configurations from {@code config.yml}. This is preferred over
+     * {@link #getConfig()} for abstraction purposes.
+     *
+     * @return plugin's user configurations
+     */
     public UserConfig getUserConfig() {
         return userConfig;
     }
