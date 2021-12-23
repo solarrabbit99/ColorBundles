@@ -13,125 +13,99 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with ColorBundles. If not, see <https://www.gnu.org/licenses/>.
- *
  */
 
 package com.solarrabbit.colorbundles;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.commons.lang.WordUtils;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.solarrabbit.colorbundles.config.UserConfig;
+import com.solarrabbit.colorbundles.listener.CraftingListener;
+import com.solarrabbit.colorbundles.loader.CustomRecipeLoader;
+import com.solarrabbit.colorbundles.loader.DefaultCustomRecipeLoader;
+import com.solarrabbit.colorbundles.loader.ItemsAdderCustomRecipeLoader;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
+import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import dev.lone.itemsadder.api.CustomStack;
-import dev.lone.itemsadder.api.Events.ItemsAdderLoadDataEvent;
 
-public final class ColorBundles extends JavaPlugin implements Listener {
-    private List<String> recipeKeys;
-    private boolean hasItemsAdder;
-
-    private static enum Dyes {
-        BLACK("black"), BLUE("blue"), BROWN("brown"), CYAN("cyan"), GRAY("gray"), GREEN("green"),
-        LIGHT_BLUE("light_blue"), LIGHT_GRAY("light_gray"), LIME("lime"), MAGENTA("magenta"), ORANGE("orange"),
-        PINK("pink"), PURPLE("purple"), RED("red"), WHITE("white"), YELLOW("yellow");
-
-        private Material dye;
-        private String name;
-
-        Dyes(String name) {
-            this.dye = Material.matchMaterial(name.toUpperCase() + "_DYE");
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return this.name;
-        }
-
-        private Material getDye() {
-            return this.dye;
-        }
-    }
+public final class ColorBundles extends JavaPlugin {
+    private UserConfig userConfig;
+    private Set<NamespacedKey> customRecipeKeys;
+    private CommandSender console;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
 
-        this.hasItemsAdder = this.getServer().getPluginManager().getPlugin("ItemsAdder") != null;
-        if (this.hasItemsAdder) {
-            getServer().getConsoleSender().sendMessage(
-                    ChatColor.AQUA + "[ColorBundles] ItemsAdder detected! Waiting for ItemsAdder to load items...");
-            getServer().getPluginManager().registerEvents(this, this);
-        }
-        getServer().getPluginManager().registerEvents(new CraftingListener(this), this);
+        userConfig = new UserConfig(getConfig());
+        customRecipeKeys = new HashSet<>();
+        console = getServer().getConsoleSender();
+
+        PluginManager pluginManager = getServer().getPluginManager();
+        pluginManager.registerEvents(new CraftingListener(this), this);
 
         loadDefaultBundleRecipe();
-
-        recipeKeys = new ArrayList<>();
-        if (!this.hasItemsAdder) {
-            for (Dyes dye : Dyes.values()) {
-                ItemStack item = new ItemStack(Material.BUNDLE);
-                ItemMeta meta = item.getItemMeta();
-                int modelData = getConfig().getInt(dye.toString());
-                meta.setCustomModelData(modelData);
-                meta.setDisplayName(
-                        ChatColor.WHITE + WordUtils.capitalize(dye.toString().replaceAll("_", " ")) + " Bundle");
-                item.setItemMeta(meta);
-
-                loadRecipe(dye, item);
-                recipeKeys.add(dye + "_bundle");
-            }
+        CustomRecipeLoader loader = new DefaultCustomRecipeLoader(this);
+        if (userConfig.hasCustomLoader()) {
+            String pluginName = userConfig.getCustomLoaderPluginName();
+            if (pluginManager.getPlugin(pluginName) == null)
+                console.sendMessage(
+                        ChatColor.GOLD + "[ColorBundles] " + pluginName
+                                + " cannot be found! Using default loader instead...");
+            else
+                switch (pluginName) {
+                    case "ItemsAdder":
+                        console.sendMessage(
+                                ChatColor.AQUA + "[ColorBundles] " + pluginName
+                                        + " detected! Waiting for ItemsAdder to load items...");
+                        loader = new ItemsAdderCustomRecipeLoader(this);
+                        break;
+                    default:
+                        console.sendMessage(
+                                ChatColor.AQUA + "[ColorBundles] " + pluginName
+                                        + " is not supported! Using default loader instead...");
+                        break;
+                }
         }
+
+        loader.loadRecipes();
     }
 
-    @EventHandler
-    public void onItemsLoadEvent(ItemsAdderLoadDataEvent evt) {
-        for (Dyes dye : Dyes.values()) {
-            ItemStack item = CustomStack.getInstance("colorbundles:" + dye + "_bundle").getItemStack();
-            loadRecipe(dye, item);
-            recipeKeys.add(dye + "_bundle");
-        }
+    public void addCustomRecipeKey(NamespacedKey key) {
+        customRecipeKeys.add(key);
+    }
+
+    public boolean isCustomRecipe(Recipe recipe) {
+        if (!(recipe instanceof ShapelessRecipe))
+            return false;
+        return customRecipeKeys.contains(((ShapelessRecipe) recipe).getKey());
+    }
+
+    public UserConfig getUserConfig() {
+        return userConfig;
     }
 
     private void loadDefaultBundleRecipe() {
         NamespacedKey key = new NamespacedKey(this, "bundle");
-        if (Bukkit.getRecipe(key) == null && Bukkit.getVersion().contains("1.17")) { // not yet loaded
-            ShapedRecipe recipe = new ShapedRecipe(key, new ItemStack(Material.BUNDLE));
-            recipe.shape("SRS", "R R", "RRR");
-            recipe.setIngredient('S', Material.STRING);
-            recipe.setIngredient('R', Material.RABBIT_HIDE);
+        if (Bukkit.getRecipe(key) != null)
+            return;
 
-            Bukkit.addRecipe(recipe);
-        }
-    }
+        ShapedRecipe recipe = new ShapedRecipe(key, new ItemStack(Material.BUNDLE));
+        recipe.shape("SRS", "R R", "RRR");
+        recipe.setIngredient('S', Material.STRING);
+        recipe.setIngredient('R', Material.RABBIT_HIDE);
 
-    private void loadRecipe(Dyes dye, ItemStack result) {
-        NamespacedKey key = new NamespacedKey(this, dye + "_bundle");
-        if (Bukkit.getRecipe(key) == null) { // not yet loaded
-            ShapelessRecipe recipe = new ShapelessRecipe(key, result);
-            recipe.addIngredient(Material.BUNDLE);
-            recipe.addIngredient(dye.getDye());
-
-            Bukkit.addRecipe(recipe);
-            getServer().getConsoleSender()
-                    .sendMessage(ChatColor.GREEN + "[ColorBundles] Loaded recipes: " + dye + "_bundle");
-        }
-    }
-
-    public List<String> getRecipeKeys() {
-        return this.recipeKeys;
-    }
-
-    public boolean hasItemsAdder() {
-        return this.hasItemsAdder;
+        Bukkit.addRecipe(recipe);
+        console.sendMessage(ChatColor.GREEN + "[ColorBundles] Loaded recipe: " + key.getKey());
     }
 }

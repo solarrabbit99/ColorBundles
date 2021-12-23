@@ -1,29 +1,83 @@
+# Enable the following if you have custom items plugins and you wish for it to
+# be a custom item of the plugin instead.
+other-plugins:
+  enabled: false
+  plugin: ItemsAdder
+
 ############################################################
 # +------------------------------------------------------+ #
-# |                      Model Data                      | #
+# |                        Models                        | #
 # +------------------------------------------------------+ #
 #                                                          #
 #   Deconflict your custom model data here. Make sure      #
 #   that the data here correctly corresponds to the data   #
-#   in the resource pack. Keep custom model data to no     #
-#   than 6 digits. DO NOT change model data once players   #
-#   start crafting dyed bundles!                           #
+#   in the resource pack. DO NOT change model data once    #
+#   players start crafting dyed bundles!                   #
 #                                                          #
 ############################################################
 
-black: 1101
-blue: 1102
-brown: 1103
-cyan: 1104
-gray: 1105
-green: 1106
-light_blue: 1107
-light_gray: 1108
-lime: 1109
-magenta: 1110
-orange: 1111
-pink: 1112
-purple: 1113
-red: 1114
-white: 1115
-yellow: 1116
+custom:
+  black:
+    name: Black Bundle
+    model-data: 1101
+    dye: BLACK_DYE
+  blue:
+    name: Blue Bundle
+    model-data: 1102
+    dye: BLUE_DYE
+  brown:
+    name: Brown Bundle
+    model-data: 1103
+    dye: BROWN_DYE
+  cyan:
+    name: Cyan Bundle
+    model-data: 1104
+    dye: CYAN_DYE
+  gray:
+    name: Gray Bundle
+    model-data: 1105
+    dye: GRAY_DYE
+  green:
+    name: Green Bundle
+    model-data: 1106
+    dye: GREEN_DYE
+  light_blue:
+    name: Light Blue Bundle
+    model-data: 1107
+    dye: LIGHT_BLUE_DYE
+  light_gray:
+    name: Light Gray Bundle
+    model-data: 1108
+    dye: LIGHT_GRAY_DYE
+  lime:
+    name: Lime Bundle
+    model-data: 1109
+    dye: LIME_DYE
+  magenta:
+    name: Magenta Bundle
+    model-data: 1110
+    dye: MAGENTA_DYE
+  orange:
+    name: Orange Bundle
+    model-data: 1111
+    dye: ORANGE_DYE
+  pink:
+    name: Pink Bundle
+    model-data: 1112
+    dye: PINK_DYE
+  purple:
+    name: Purple Bundle
+    model-data: 1113
+    dye: PURPLE_DYE
+  red:
+    name: Red Bundle
+    model-data: 1114
+    dye: RED_DYE
+  white:
+    name: White Bundle
+    model-data: 1115
+    dye: WHITE_DYE
+  yellow:
+    name: Yellow Bundle
+    model-data: 1116
+    dye: YELLOW_DYE
